@@ -3,7 +3,8 @@ import Fastify from 'fastify';
 import fastifyCookie from '@fastify/cookie';
 import fastifySession from '@fastify/session';
 import { Redis } from 'ioredis';
-import RedisStore from 'connect-redis';
+import { RedisStore } from 'connect-redis';
+import { errorMiddleware } from '../../../src/shared/middleware/error.middleware.js';
 import { authRoutes } from '../../../src/modules/auth/auth.routes.js';
 import { authService } from '../../../src/modules/auth/auth.service.js';
 import { AppError } from '../../../src/shared/lib/errors.js';
@@ -24,6 +25,7 @@ describe('auth routes', () => {
       saveUninitialized: false,
     });
 
+    app.setErrorHandler(errorMiddleware);
     await app.register(authRoutes);
     await app.ready();
   });
@@ -46,7 +48,7 @@ describe('auth routes', () => {
 
     expect(res.statusCode).toBe(401);
     const body = JSON.parse(res.body);
-    expect(body.success).toBe(false);
+    expect(body).toHaveProperty('success', false);
     expect(body.error.code).toBe('INVALID_CREDENTIALS');
   });
 

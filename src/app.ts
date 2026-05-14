@@ -1,7 +1,7 @@
 import Fastify from 'fastify';
 import fastifyCookie from '@fastify/cookie';
 import fastifySession from '@fastify/session';
-import RedisStore from 'connect-redis';
+import { RedisStore } from 'connect-redis';
 import { Redis } from 'ioredis';
 import { env } from './config/env.js';
 import { prisma } from './database/prisma.js';

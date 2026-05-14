@@ -3,7 +3,7 @@ import { env } from '../config/env.js';
 
 function createPrismaClient() {
   const client = new PrismaClient({
-    log: env.NODE_ENV === 'development' ? ['query', 'warn', 'error'] : ['warn', 'error'],
+    log: env.NODE_ENV === 'dev' ? ['query', 'warn', 'error'] : ['warn', 'error'],
   });
   return client;
 }
@@ -15,6 +15,6 @@ declare global {
 
 export const prisma = globalThis.__prisma ?? createPrismaClient();
 
-if (env.NODE_ENV !== 'production') {
+if (env.NODE_ENV !== 'prod') {
   globalThis.__prisma = prisma;
 }

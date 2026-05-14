@@ -22,7 +22,7 @@ export async function errorMiddleware(
 
   if ('statusCode' in error && typeof (error as FastifyError).statusCode === 'number') {
     const fe = error as FastifyError;
-    return reply.status(fe.statusCode).send(fail(fe.code || 'INTERNAL_ERROR', fe.message));
+    return reply.status(fe.statusCode!).send(fail(fe.code || 'INTERNAL_ERROR', fe.message));
   }
 
   request.log.error(error, 'Unhandled error');
