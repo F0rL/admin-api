@@ -1,0 +1,23 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: dev-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root123  # 请替换为你的MySQL root密码
+      MYSQL_DATABASE: dev_db                    # 初始化时自动创建的数据库名
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql_data:/var/lib/mysql             # 数据持久化到本地目录
+    restart: always
+    command: --default-authentication-plugin=mysql_native_password
+
+  redis:
+    image: redis:7
+    container_name: dev-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis_data:/data                      # 数据持久化
+    command: redis-server --appendonly yes --requirepass redis123
+    restart: always
