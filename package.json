@@ -12,6 +12,9 @@
     "test:coverage": "vitest run --coverage",
     "lint": "tsc --noEmit"
   },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",
     "@fastify/session": "^11.0.2",
