@@ -1,3 +1,15 @@
+/**
+ * Fastify 应用工厂
+ *
+ * 组装应用所需的所有插件和路由：
+ * - Cookie 解析（Session 前置依赖）
+ * - Redis 存储的 Session（connect-redis）
+ * - 全局错误处理中间件
+ * - 所有路由挂载到 /api/v1 前缀下
+ *
+ * buildApp() 返回已配置的 Fastify 实例，server.ts 负责启动监听。
+ */
+
 import Fastify from 'fastify';
 import fastifyCookie from '@fastify/cookie';
 import fastifySession from '@fastify/session';

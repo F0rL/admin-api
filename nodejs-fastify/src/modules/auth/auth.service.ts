@@ -1,3 +1,10 @@
+/**
+ * 认证模块 - 业务逻辑层
+ *
+ * 处理登录认证与用户信息查询的核心逻辑。
+ * login() 校验用户名密码并返回用户信息；getMe() 根据用户 ID 查询详情。
+ */
+
 import bcrypt from 'bcryptjs';
 import { prisma } from '../../database/prisma.js';
 import { AppError } from '../../shared/lib/errors.js';

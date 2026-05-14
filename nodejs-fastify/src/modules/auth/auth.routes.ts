@@ -1,3 +1,11 @@
+/**
+ * 认证模块 - 路由定义
+ *
+ * POST /auth/login   - 登录：校验凭证，写入 Session
+ * POST /auth/logout  - 退出：销毁 Session（需认证）
+ * GET  /auth/me      - 获取当前用户信息（需认证）
+ */
+
 import { FastifyInstance } from 'fastify';
 import { authGuard } from '../../shared/middleware/auth.guard.js';
 import { ok } from '../../shared/lib/response.js';

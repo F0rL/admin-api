@@ -1,3 +1,10 @@
+/**
+ * 统一 API 响应格式
+ *
+ * 所有接口统一返回 { success, data } 或 { success, error } 结构。
+ * ok() 用于成功响应，fail() 用于错误响应，确保前端可以统一处理。
+ */
+
 export interface SuccessResponse<T = unknown> {
   success: true;
   data: T;

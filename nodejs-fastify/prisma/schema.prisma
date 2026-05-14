@@ -1,3 +1,6 @@
+// Prisma 数据模型定义
+// 数据库：MySQL 8，使用 prisma-client-js 生成客户端
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,15 +10,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/// 系统用户表
+/// 存储管理员账户信息，支持登录认证和权限控制
 model User {
   id        Int      @id @default(autoincrement())
-  username  String   @unique @db.VarChar(50)
-  password  String   @db.VarChar(255)
-  email     String?  @unique @db.VarChar(255)
-  role      String   @default("admin") @db.VarChar(20)
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  username  String   @unique @db.VarChar(50)    // 登录用户名
+  password  String   @db.VarChar(255)            // bcrypt 加密后的密码
+  email     String?  @unique @db.VarChar(255)    // 邮箱（可选）
+  role      String   @default("admin") @db.VarChar(20) // 角色：admin / superadmin 等
+  isActive  Boolean  @default(true)              // 是否启用
+  createdAt DateTime @default(now())             // 创建时间
+  updatedAt DateTime @updatedAt                  // 更新时间
 
   @@map("users")
 }

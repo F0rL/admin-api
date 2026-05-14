@@ -1,3 +1,9 @@
+/**
+ * 认证模块 - 请求/响应数据校验
+ *
+ * 使用 Zod 定义登录请求体和用户响应体的结构及校验规则。
+ */
+
 import { z } from 'zod';
 
 export const loginSchema = z.object({

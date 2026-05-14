@@ -1,3 +1,10 @@
+/**
+ * Worker 管理服务
+ *
+ * 基于 BullMQ 的 Worker 创建与管理，支持自定义并发数（默认 5）。
+ * 自动监听 failed 事件并打印错误日志，方便排查队列任务失败原因。
+ */
+
 import { Worker, type WorkerOptions, type Job } from 'bullmq';
 import { queueConnection } from './index.js';
 

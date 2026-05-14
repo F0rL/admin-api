@@ -1,3 +1,10 @@
+/**
+ * 环境变量配置模块
+ *
+ * 使用 Zod 对 process.env 进行运行时校验和类型推导。
+ * 校验失败会打印详细错误并退出进程，确保应用在缺少关键配置时不会启动。
+ */
+
 import 'dotenv/config';
 import { z } from 'zod';
 

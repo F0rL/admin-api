@@ -1,3 +1,10 @@
+/**
+ * 应用入口
+ *
+ * 构建 Fastify 实例并启动 HTTP 监听。
+ * 启动失败时记录错误并退出进程。
+ */
+
 import { env } from './config/env.js';
 import { buildApp } from './app.js';
 

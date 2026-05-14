@@ -1,3 +1,10 @@
+/**
+ * 全局错误处理中间件
+ *
+ * 统一处理 AppError（业务异常）、ZodError（校验异常）、
+ * FastifyError（框架异常）及其他未知异常，始终返回统一的 JSON 错误格式。
+ */
+
 import { FastifyError, FastifyReply, FastifyRequest } from 'fastify';
 import { ZodError } from 'zod';
 import { AppError } from '../lib/errors.js';

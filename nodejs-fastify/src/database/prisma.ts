@@ -1,3 +1,10 @@
+/**
+ * Prisma 数据库客户端单例
+ *
+ * 开发环境启用查询日志方便调试，生产环境仅记录 warn/error。
+ * 利用 globalThis 缓存实例，避免开发环境热重载时创建多个连接。
+ */
+
 import { PrismaClient } from '@prisma/client';
 import { env } from '../config/env.js';
 
