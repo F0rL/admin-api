@@ -15,7 +15,7 @@ const departmentTreeItemSchema = {
     status: { type: 'boolean' },
     children: {
       type: 'array',
-      items: { $ref: '#/components/schemas/DepartmentTreeItem' },
+      items: { type: 'object' },
     },
   },
 };

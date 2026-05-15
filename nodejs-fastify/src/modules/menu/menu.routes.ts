@@ -21,7 +21,7 @@ const menuTreeItemSchema = {
     status: { type: 'boolean' },
     children: {
       type: 'array',
-      items: { $ref: '#/components/schemas/MenuTreeItem' },
+      items: { type: 'object' },
     },
   },
 };
