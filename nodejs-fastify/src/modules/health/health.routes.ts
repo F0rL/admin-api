@@ -10,12 +10,36 @@ import { prisma } from '../../database/prisma.js';
 import { ok } from '../../shared/lib/response.js';
 
 export async function healthRoutes(app: FastifyInstance) {
-  app.get('/health', async (_request, reply) => {
-    const dbStatus = await prisma.$queryRaw`SELECT 1 AS ok`.then(
-      () => 'healthy' as const,
-      () => 'unhealthy' as const,
-    );
+  app.get(
+    '/health',
+    {
+      schema: {
+        tags: ['Health'],
+        summary: '健康检查',
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              success: { type: 'boolean', enum: [true] },
+              data: {
+                type: 'object',
+                properties: {
+                  status: { type: 'string', enum: ['ok'] },
+                  database: { type: 'string', enum: ['healthy', 'unhealthy'] },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    async (_request, reply) => {
+      const dbStatus = await prisma.$queryRaw`SELECT 1 AS ok`.then(
+        () => 'healthy' as const,
+        () => 'unhealthy' as const,
+      );
 
-    return reply.send(ok({ status: 'ok', database: dbStatus }));
-  });
+      return reply.send(ok({ status: 'ok', database: dbStatus }));
+    },
+  );
 }
