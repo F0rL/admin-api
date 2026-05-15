@@ -5,6 +5,22 @@
 
 Node.js backend skeleton for admin systems, part of the **admin-api** monorepo. Other implementations (Java, etc.) live in sibling directories.
 
+## New Developer Onboarding
+
+First-time setup:
+```bash
+pnpm install              # install deps (postinstall tolerates missing .env)
+pnpm dev:init             # auto-create .env → check MySQL/Redis → migrate → seed
+pnpm dev                  # start dev server (hot reload)
+```
+
+- `scripts/init-dev.ts` is the entry point for `pnpm dev:init`
+  - Copies `.env.example` → `.env` + `.env.development` if missing
+  - Checks TCP connectivity to MySQL (3306) and Redis (6379); exits with guidance if unavailable
+  - Runs `prisma generate` → `prisma migrate dev` → `prisma db seed`
+- `.env.example` contains dev defaults matching the root `docker-compose.yml`
+- `postinstall` gracefully skips `prisma generate` when `DATABASE_URL` is unset
+
 ## Tech Stack
 
 - **Runtime**: Node.js (TypeScript)
@@ -114,3 +130,8 @@ Use `shared/lib/response.ts` helpers (`ok()`, `fail()`) to build responses.
 - Fastify plugin pattern: `async function plugin(fastify, opts)`
 - Error first: validate inputs at route boundary, throw AppError in service layer
 - TypeScript strict mode enabled
+
+## Git Commit Rules
+
+- Commit message must use **Chinese**
+- **Never** include `Co-Authored-By` trailer of any kind
