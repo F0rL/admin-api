@@ -13,15 +13,15 @@ describe('response helpers', () => {
   });
 
   it('fail() should return error response', () => {
-    const result = fail('NOT_FOUND', 'User not found');
-    expect(result).toEqual({ success: false, error: { code: 'NOT_FOUND', message: 'User not found' } });
+    const result = fail(1102, 'User not found');
+    expect(result).toEqual({ success: false, error: { code: 1102, message: 'User not found' } });
   });
 
   it('fail() should include details when provided', () => {
-    const result = fail('VALIDATION_ERROR', 'Invalid input', { field: 'email' });
+    const result = fail(1002, 'Invalid input', { field: 'email' });
     expect(result).toEqual({
       success: false,
-      error: { code: 'VALIDATION_ERROR', message: 'Invalid input', details: { field: 'email' } },
+      error: { code: 1002, message: 'Invalid input', details: { field: 'email' } },
     });
   });
 });

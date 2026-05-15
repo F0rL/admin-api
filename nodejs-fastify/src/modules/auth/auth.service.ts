@@ -14,19 +14,20 @@ export class AuthService {
   async login(input: LoginInput): Promise<{ user: UserResponse }> {
     const user = await prisma.user.findUnique({
       where: { username: input.username },
+      include: { role: true },
     });
 
     if (!user) {
-      throw new AppError(401, 'INVALID_CREDENTIALS', 'Invalid username or password');
+      throw new AppError(401, 1001, 'Invalid username or password');
     }
 
     if (!user.isActive) {
-      throw new AppError(403, 'ACCOUNT_DISABLED', 'Account has been disabled');
+      throw new AppError(403, 1006, 'Account has been disabled');
     }
 
     const valid = await bcrypt.compare(input.password, user.password);
     if (!valid) {
-      throw new AppError(401, 'INVALID_CREDENTIALS', 'Invalid username or password');
+      throw new AppError(401, 1001, 'Invalid username or password');
     }
 
     return {
@@ -34,18 +35,19 @@ export class AuthService {
         id: user.id,
         username: user.username,
         email: user.email,
-        role: user.role,
+        role: user.role?.code ?? '',
       },
     };
   }
 
-  async getMe(userId: number): Promise<{ user: UserResponse }> {
+  async getMe(userId: string): Promise<{ user: UserResponse }> {
     const user = await prisma.user.findUnique({
       where: { id: userId },
+      include: { role: true },
     });
 
     if (!user) {
-      throw new AppError(404, 'USER_NOT_FOUND', 'User not found');
+      throw new AppError(404, 1102, 'User not found');
     }
 
     return {
@@ -53,7 +55,7 @@ export class AuthService {
         id: user.id,
         username: user.username,
         email: user.email,
-        role: user.role,
+        role: user.role?.code ?? '',
       },
     };
   }

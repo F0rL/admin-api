@@ -14,7 +14,7 @@ export interface SuccessResponse<T = unknown> {
 export interface ErrorResponse {
   success: false;
   error: {
-    code: string;
+    code: number;
     message: string;
     details?: unknown;
   };
@@ -26,6 +26,6 @@ export function ok<T>(data: T, message?: string): SuccessResponse<T> {
   return { success: true, data, ...(message ? { message } : {}) };
 }
 
-export function fail(code: string, message: string, details?: unknown): ErrorResponse {
+export function fail(code: number, message: string, details?: unknown): ErrorResponse {
   return { success: false, error: { code, message, ...(details ? { details } : {}) } };
 }

@@ -3,20 +3,20 @@ import { AppError } from '../../../src/shared/lib/errors.js';
 
 describe('AppError', () => {
   it('should create error with status code and code', () => {
-    const err = new AppError(400, 'VALIDATION_ERROR', 'Invalid input');
+    const err = new AppError(400, 1002, 'Invalid input');
     expect(err.statusCode).toBe(400);
-    expect(err.code).toBe('VALIDATION_ERROR');
+    expect(err.code).toBe(1002);
     expect(err.message).toBe('Invalid input');
     expect(err.name).toBe('AppError');
   });
 
   it('should include details when provided', () => {
-    const err = new AppError(409, 'DUPLICATE', 'Already exists', { field: 'email' });
+    const err = new AppError(409, 1101, 'Already exists', { field: 'email' });
     expect(err.details).toEqual({ field: 'email' });
   });
 
   it('should be instance of Error', () => {
-    const err = new AppError(500, 'INTERNAL', 'Oops');
+    const err = new AppError(500, 1000, 'Oops');
     expect(err).toBeInstanceOf(Error);
   });
 });

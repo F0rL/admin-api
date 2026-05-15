@@ -9,7 +9,7 @@ import 'fastify';
 
 declare module 'fastify' {
   interface Session {
-    userId: number;
+    userId: string;
     username: string;
     role: string;
   }

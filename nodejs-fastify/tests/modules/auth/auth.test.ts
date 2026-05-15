@@ -37,7 +37,7 @@ describe('auth routes', () => {
 
   it('POST /auth/login should fail with invalid credentials', async () => {
     vi.spyOn(authService, 'login').mockRejectedValueOnce(
-      new AppError(401, 'INVALID_CREDENTIALS', 'Invalid username or password'),
+      new AppError(401, 1001, 'Invalid username or password'),
     );
 
     const res = await app.inject({
@@ -49,7 +49,7 @@ describe('auth routes', () => {
     expect(res.statusCode).toBe(401);
     const body = JSON.parse(res.body);
     expect(body).toHaveProperty('success', false);
-    expect(body.error.code).toBe('INVALID_CREDENTIALS');
+    expect(body.error.code).toBe(1001);
   });
 
   it('GET /auth/me should return 401 when not authenticated', async () => {
