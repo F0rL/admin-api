@@ -11,6 +11,8 @@
  */
 
 import Fastify from 'fastify';
+import fastifySwagger from '@fastify/swagger';
+import fastifySwaggerUi from '@fastify/swagger-ui';
 import fastifyCookie from '@fastify/cookie';
 import fastifySession from '@fastify/session';
 import { RedisStore } from 'connect-redis';
@@ -35,6 +37,36 @@ export async function buildApp() {
           options: { colorize: true },
         },
       }),
+    },
+  });
+
+  // Swagger / OpenAPI 文档
+  await app.register(fastifySwagger, {
+    openapi: {
+      info: {
+        title: 'Admin API',
+        description: '后台管理系统接口文档',
+        version: '0.1.0',
+      },
+      servers: [{ url: 'http://localhost:3000', description: '开发环境' }],
+      components: {
+        securitySchemes: {
+          sessionCookie: {
+            type: 'apiKey',
+            in: 'cookie',
+            name: 'sessionId',
+            description: 'Session ID（登录后自动设置）',
+          },
+        },
+      },
+    },
+  });
+
+  await app.register(fastifySwaggerUi, {
+    routePrefix: '/docs',
+    uiConfig: {
+      docExpansion: 'list',
+      deepLinking: true,
     },
   });
 
