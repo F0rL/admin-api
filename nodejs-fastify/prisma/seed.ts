@@ -1,3 +1,4 @@
+/// <reference types="node" />
 /**
  * 开发环境种子数据
  *
