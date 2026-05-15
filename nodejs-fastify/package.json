@@ -12,7 +12,14 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "lint": "tsc --noEmit",
-    "postinstall": "prisma generate"
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "prisma db seed",
+    "db:reset": "prisma migrate reset --force",
+    "db:studio": "prisma studio",
+    "docker:up": "docker compose -f ../docker-compose.yml up -d",
+    "docker:down": "docker compose -f ../docker-compose.yml down",
+    "docker:logs": "docker compose -f ../docker-compose.yml logs -f",
+    "postinstall": "node -e \"try{require('fs').existsSync('.env')&&require('child_process').execSync('npx prisma generate',{stdio:'inherit',env:{...process.env,DATABASE_URL:process.env.DATABASE_URL||'mysql://skip@localhost:3306/skip'}})}catch(e){console.log('  [postinstall] DATABASE_URL 未配置，跳过 Prisma Client 生成（执行 pnpm dev:init 时会生成）')}\""
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
