@@ -29,7 +29,7 @@ export async function departmentRoutes(app: FastifyInstance) {
     return reply.send(ok(result.data));
   });
 
-  app.get('/department/tree', { preHandler: authGuard }, async (request, reply) => {
+  app.get('/department/tree', { preHandler: authGuard }, async (_request, reply) => {
     const result = await departmentService.tree();
     return reply.send(ok(result.data));
   });

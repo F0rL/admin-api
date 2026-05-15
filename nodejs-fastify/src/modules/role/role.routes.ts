@@ -29,7 +29,7 @@ export async function roleRoutes(app: FastifyInstance) {
     return reply.send(ok(result.data));
   });
 
-  app.get('/role/list', { preHandler: authGuard }, async (request, reply) => {
+  app.get('/role/list', { preHandler: authGuard }, async (_request, reply) => {
     const result = await roleService.list();
     return reply.send(ok(result.data));
   });

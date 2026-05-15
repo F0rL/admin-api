@@ -1,5 +1,9 @@
 // Prisma 数据模型定义
 // 数据库：MySQL 8，使用 prisma-client-js 生成客户端
+//
+// ID 策略：全部使用 UUID v7（时间有序字符串主键）
+// 关联表统一使用软删除（deletedAt）
+// 权限系统以 permissions 表为核心，code 作为主键
 
 generator client {
   provider = "prisma-client-js"
@@ -10,17 +14,175 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/// 系统用户表
-/// 存储管理员账户信息，支持登录认证和权限控制
+/// 用户表
+/// 存储管理员和外部用户的账户信息，支持登录认证和权限控制
 model User {
-  id        Int      @id @default(autoincrement())
-  username  String   @unique @db.VarChar(50)    // 登录用户名
-  password  String   @db.VarChar(255)            // bcrypt 加密后的密码
-  email     String?  @unique @db.VarChar(255)    // 邮箱（可选）
-  role      String   @default("admin") @db.VarChar(20) // 角色：admin / superadmin 等
-  isActive  Boolean  @default(true)              // 是否启用
-  createdAt DateTime @default(now())             // 创建时间
-  updatedAt DateTime @updatedAt                  // 更新时间
+  id             String    @id @db.VarChar(36)
+  username       String    @unique @db.VarChar(50)
+  password       String    @db.VarChar(255)
+  nickname       String    @db.VarChar(100)
+  email          String?   @unique @db.VarChar(255)
+  phone          String?   @unique @db.VarChar(20)
+  avatar         String?   @db.VarChar(500)
+  roleId         String?   @db.VarChar(36)
+  departmentId   String?   @db.VarChar(36)
+  isActive       Boolean   @default(true)
+  isLocked       Boolean   @default(false)
+  lockedUntil    DateTime?
+  lastLoginAt    DateTime?
+  lastLoginIp    String?   @db.VarChar(45)
+  loginFailCount Int       @default(0)
+  createdBy      String?   @db.VarChar(36)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+
+  role           Role?           @relation(fields: [roleId], references: [id])
+  department     Department?     @relation(fields: [departmentId], references: [id])
+  loginLogs      LoginLog[]
+  operationLogs  OperationLog[]
 
   @@map("users")
+}
+
+/// 角色表
+model Role {
+  id          String    @id @db.VarChar(36)
+  name        String    @unique @db.VarChar(50)
+  code        String    @unique @db.VarChar(50)
+  description String?   @db.VarChar(255)
+  isSystem    Boolean   @default(false)
+  status      Boolean   @default(true)
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  users           User[]
+  roleMenus       RoleMenu[]
+  rolePermissions RolePermission[]
+
+  @@map("roles")
+}
+
+/// 权限表
+/// 主键为 permission code，作为权限控制和鉴权的唯一依据
+model Permission {
+  code        String    @id @db.VarChar(100)    // 如 "user:create", "user:delete"
+  name        String    @db.VarChar(50)
+  module      String    @db.VarChar(50)
+  description String?   @db.VarChar(255)
+  createdAt   DateTime  @default(now())
+  deletedAt   DateTime?
+
+  rolePermissions RolePermission[]
+  menus           Menu[]
+
+  @@map("permissions")
+}
+
+/// 角色-权限关联表
+model RolePermission {
+  id             String   @id @db.VarChar(36)
+  roleId         String   @db.VarChar(36)
+  permissionCode String   @db.VarChar(100)
+  createdAt      DateTime @default(now())
+  deletedAt      DateTime?
+
+  role       Role       @relation(fields: [roleId], references: [id])
+  permission Permission @relation(fields: [permissionCode], references: [code])
+
+  @@map("role_permissions")
+}
+
+/// 菜单表
+/// 支持树形结构（directory -> menu -> button），按钮级权限关联 permissions 表
+model Menu {
+  id             String   @id @db.VarChar(36)
+  parentId       String?  @db.VarChar(36)
+  name           String   @db.VarChar(100)
+  icon           String?  @db.VarChar(100)
+  path           String?  @db.VarChar(255)
+  component      String?  @db.VarChar(255)
+  type           String   @db.VarChar(20)      // directory | menu | button
+  permissionCode String?  @db.VarChar(100)     // button 类型时关联 permissions.code
+  sortOrder      Int      @default(0)
+  isVisible      Boolean  @default(true)
+  status         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  deletedAt      DateTime?
+
+  parent     Menu?      @relation("MenuTree", fields: [parentId], references: [id])
+  children   Menu[]     @relation("MenuTree")
+  roleMenus  RoleMenu[]
+  permission Permission? @relation(fields: [permissionCode], references: [code])
+
+  @@map("menus")
+}
+
+/// 角色-菜单关联表
+model RoleMenu {
+  id        String   @id @db.VarChar(36)
+  roleId    String   @db.VarChar(36)
+  menuId    String   @db.VarChar(36)
+  createdAt DateTime @default(now())
+  deletedAt DateTime?
+
+  role Role @relation(fields: [roleId], references: [id])
+  menu Menu @relation(fields: [menuId], references: [id])
+
+  @@map("role_menus")
+}
+
+/// 部门表
+model Department {
+  id        String       @id @db.VarChar(36)
+  name      String       @db.VarChar(100)
+  parentId  String?      @db.VarChar(36)
+  sortOrder Int          @default(0)
+  status    Boolean      @default(true)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  deletedAt DateTime?
+
+  parent   Department? @relation("DepartmentTree", fields: [parentId], references: [id])
+  children Department[] @relation("DepartmentTree")
+  users    User[]
+
+  @@map("departments")
+}
+
+/// 登录日志表
+model LoginLog {
+  id         String   @id @db.VarChar(36)
+  userId     String?  @db.VarChar(36)
+  username   String   @db.VarChar(50)
+  ip         String   @db.VarChar(45)
+  userAgent  String?  @db.VarChar(500)
+  status     String   @db.VarChar(20)    // success | failure
+  failReason String?  @db.VarChar(255)
+  createdAt  DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@map("login_logs")
+}
+
+/// 操作审计日志表
+model OperationLog {
+  id         String   @id @db.VarChar(36)
+  userId     String   @db.VarChar(36)
+  username   String   @db.VarChar(50)
+  action     String   @db.VarChar(50)    // create | update | delete
+  module     String   @db.VarChar(50)
+  targetId   String?  @db.VarChar(100)
+  targetType String?  @db.VarChar(50)
+  detail     Json?
+  ip         String?  @db.VarChar(45)
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("operation_logs")
 }

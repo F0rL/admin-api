@@ -29,7 +29,7 @@ export async function menuRoutes(app: FastifyInstance) {
     return reply.send(ok(result.data));
   });
 
-  app.get('/menu/tree', { preHandler: authGuard }, async (request, reply) => {
+  app.get('/menu/tree', { preHandler: authGuard }, async (_request, reply) => {
     const result = await menuService.tree();
     return reply.send(ok(result.data));
   });
