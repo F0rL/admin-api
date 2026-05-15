@@ -1,0 +1,22 @@
+{
+  "attribution": {
+    "commit": ""
+  },
+  "language": "chinese",
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p \"d:/code/store/admin-api/nodejs-fastify/src/shared/lib\")",
+      "Bash(mkdir -p \"d:/code/store/admin-api/nodejs-fastify/src/modules\")",
+      "Skill(superpowers:writing-plans)",
+      "Skill(superpowers:writing-plans:*)",
+      "Skill(superpowers:subagent-driven-development)",
+      "Skill(superpowers:subagent-driven-development:*)",
+      "Bash(npx prisma *)",
+      "Bash(npx tsc *)",
+      "Bash(npx vitest *)",
+      "Bash(git add *)",
+      "Bash(Get-ChildItem -Path src/modules -Recurse -Name)",
+      "Bash(Sort-Object)"
+    ]
+  }
+}
