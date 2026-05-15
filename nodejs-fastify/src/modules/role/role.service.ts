@@ -26,8 +26,8 @@ export class RoleService {
       },
     });
     if (existing) {
-      if (existing.name === input.name) throw new AppError(409, 3003, '角色名称已存在');
-      if (existing.code === input.code) throw new AppError(409, 3002, '角色编码已存在');
+      if (existing.name === input.name) throw new AppError(409, 'ROLE_DUPLICATE_NAME', '角色名称已存在');
+      if (existing.code === input.code) throw new AppError(409, 'ROLE_DUPLICATE_CODE', '角色编码已存在');
     }
 
     const role = await prisma.role.create({
@@ -68,8 +68,8 @@ export class RoleService {
 
   async delete(id: string): Promise<void> {
     const role = await prisma.role.findUnique({ where: { id } });
-    if (!role || role.deletedAt) throw new AppError(404, 3001, '角色不存在');
-    if (role.isSystem) throw new AppError(400, 3004, '系统角色不可删除');
+    if (!role || role.deletedAt) throw new AppError(404, 'ROLE_NOT_FOUND', '角色不存在');
+    if (role.isSystem) throw new AppError(400, 'ROLE_SYSTEM_PROTECTED', '系统角色不可删除');
 
     await prisma.role.update({
       where: { id },
@@ -79,7 +79,7 @@ export class RoleService {
 
   async update(input: UpdateRoleInput): Promise<{ data: RoleDetail }> {
     const role = await prisma.role.findUnique({ where: { id: input.id } });
-    if (!role || role.deletedAt) throw new AppError(404, 3001, '角色不存在');
+    if (!role || role.deletedAt) throw new AppError(404, 'ROLE_NOT_FOUND', '角色不存在');
 
     const data: Record<string, unknown> = {};
     if (input.name !== undefined) data.name = input.name;
@@ -131,7 +131,7 @@ export class RoleService {
         _count: { select: { users: true } },
       },
     });
-    if (!role || role.deletedAt) throw new AppError(404, 3001, '角色不存在');
+    if (!role || role.deletedAt) throw new AppError(404, 'ROLE_NOT_FOUND', '角色不存在');
 
     const [roleMenus, rolePerms] = await Promise.all([
       prisma.roleMenu.findMany({ where: { roleId: id, deletedAt: null }, select: { menuId: true } }),

@@ -58,15 +58,15 @@ export class AuthService {
     });
 
     if (!user || user.deletedAt) {
-      throw new AppError(401, 1002, '用户名或密码错误');
+      throw new AppError(401, 'AUTH_LOGIN_FAILED', '用户名或密码错误');
     }
 
     if (user.isLocked && user.lockedUntil && user.lockedUntil > new Date()) {
-      throw new AppError(403, 1004, '账号已被锁定');
+      throw new AppError(403, 'AUTH_ACCOUNT_LOCKED', '账号已被锁定');
     }
 
     if (!user.isActive) {
-      throw new AppError(403, 1003, '账号已被禁用');
+      throw new AppError(403, 'AUTH_ACCOUNT_DISABLED', '账号已被禁用');
     }
 
     const valid = await bcrypt.compare(input.password, user.password);
@@ -83,7 +83,7 @@ export class AuthService {
         data: { id: generateId(), userId: user.id, username: input.username, ip: '', status: 'failure', failReason: '密码错误' },
       });
 
-      throw new AppError(401, 1002, '用户名或密码错误');
+      throw new AppError(401, 'AUTH_LOGIN_FAILED', '用户名或密码错误');
     }
 
     await prisma.user.update({
@@ -115,7 +115,7 @@ export class AuthService {
     });
 
     if (!user || user.deletedAt) {
-      throw new AppError(404, 2001, '用户不存在');
+      throw new AppError(404, 'USER_NOT_FOUND', '用户不存在');
     }
 
     const { permissions, menus } = user.roleId
@@ -137,17 +137,17 @@ export class AuthService {
 
   async changePassword(userId: string, oldPassword: string, newPassword: string): Promise<void> {
     const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user) throw new AppError(404, 2001, '用户不存在');
+    if (!user) throw new AppError(404, 'USER_NOT_FOUND', '用户不存在');
 
     const valid = await bcrypt.compare(oldPassword, user.password);
-    if (!valid) throw new AppError(400, 1005, '原密码错误');
+    if (!valid) throw new AppError(400, 'AUTH_OLD_PASSWORD_ERROR', '原密码错误');
 
     await prisma.user.update({ where: { id: userId }, data: { password: await bcrypt.hash(newPassword, 10) } });
   }
 
   async resetPassword(targetUserId: string, newPassword: string): Promise<void> {
     const user = await prisma.user.findUnique({ where: { id: targetUserId } });
-    if (!user) throw new AppError(404, 2001, '用户不存在');
+    if (!user) throw new AppError(404, 'USER_NOT_FOUND', '用户不存在');
 
     await prisma.user.update({ where: { id: targetUserId }, data: { password: await bcrypt.hash(newPassword, 10) } });
   }

@@ -27,7 +27,7 @@ export class MenuService {
   async create(input: CreateMenuInput): Promise<{ data: MenuTreeItem }> {
     if (input.parentId) {
       const parent = await prisma.menu.findUnique({ where: { id: input.parentId } });
-      if (!parent || parent.deletedAt) throw new AppError(404, 4002, '父菜单不存在');
+      if (!parent || parent.deletedAt) throw new AppError(404, 'MENU_PARENT_NOT_FOUND', '父菜单不存在');
     }
 
     const menu = await prisma.menu.create({
@@ -51,10 +51,10 @@ export class MenuService {
 
   async delete(id: string): Promise<void> {
     const menu = await prisma.menu.findUnique({ where: { id } });
-    if (!menu || menu.deletedAt) throw new AppError(404, 4001, '菜单不存在');
+    if (!menu || menu.deletedAt) throw new AppError(404, 'MENU_NOT_FOUND', '菜单不存在');
 
     const childrenCount = await prisma.menu.count({ where: { parentId: id, deletedAt: null } });
-    if (childrenCount > 0) throw new AppError(400, 4003, '存在子菜单不可删除');
+    if (childrenCount > 0) throw new AppError(400, 'MENU_HAS_CHILDREN', '存在子菜单不可删除');
 
     await prisma.menu.update({
       where: { id },
@@ -64,7 +64,7 @@ export class MenuService {
 
   async update(input: UpdateMenuInput): Promise<{ data: MenuTreeItem }> {
     const menu = await prisma.menu.findUnique({ where: { id: input.id } });
-    if (!menu || menu.deletedAt) throw new AppError(404, 4001, '菜单不存在');
+    if (!menu || menu.deletedAt) throw new AppError(404, 'MENU_NOT_FOUND', '菜单不存在');
 
     const data: Record<string, unknown> = {};
     if (input.parentId !== undefined) data.parentId = input.parentId || null;
@@ -84,7 +84,7 @@ export class MenuService {
 
   async detail(id: string): Promise<{ data: MenuTreeItem }> {
     const menu = await prisma.menu.findUnique({ where: { id } });
-    if (!menu || menu.deletedAt) throw new AppError(404, 4001, '菜单不存在');
+    if (!menu || menu.deletedAt) throw new AppError(404, 'MENU_NOT_FOUND', '菜单不存在');
 
     return { data: { ...menu, children: [] } };
   }

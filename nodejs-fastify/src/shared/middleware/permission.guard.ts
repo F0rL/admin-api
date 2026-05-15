@@ -14,7 +14,7 @@ export function requirePermission(permissionCode: string) {
   return async (request: FastifyRequest, reply: FastifyReply) => {
     const userId = request.session?.userId as string | undefined;
     if (!userId) {
-      return reply.status(401).send(fail(10001, '未登录或已过期'));
+      return reply.status(401).send(fail('AUTH_UNAUTHORIZED', '未登录或已过期'));
     }
 
     const user = await prisma.user.findUnique({
@@ -23,7 +23,7 @@ export function requirePermission(permissionCode: string) {
     });
 
     if (!user?.roleId) {
-      return reply.status(403).send(fail(1007, '权限不足'));
+      return reply.status(403).send(fail('AUTH_PERMISSION_DENIED', '权限不足'));
     }
 
     const permission = await prisma.rolePermission.findFirst({
@@ -35,7 +35,7 @@ export function requirePermission(permissionCode: string) {
     });
 
     if (!permission) {
-      return reply.status(403).send(fail(1007, '权限不足'));
+      return reply.status(403).send(fail('AUTH_PERMISSION_DENIED', '权限不足'));
     }
   };
 }

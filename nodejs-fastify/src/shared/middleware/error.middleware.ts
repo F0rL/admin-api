@@ -24,14 +24,14 @@ export async function errorMiddleware(
       path: e.path.join('.'),
       message: e.message,
     }));
-    return reply.status(400).send(fail(1002, 'Request validation failed', details));
+    return reply.status(400).send(fail('COMMON_PARAM_ERROR', 'Request validation failed', details));
   }
 
   if ('statusCode' in error && typeof (error as FastifyError).statusCode === 'number') {
     const fe = error as FastifyError;
-    return reply.status(fe.statusCode!).send(fail(1000, fe.message));
+    return reply.status(fe.statusCode!).send(fail('COMMON_ERROR', fe.message));
   }
 
   request.log.error(error, 'Unhandled error');
-  return reply.status(500).send(fail(1000, 'An unexpected error occurred'));
+  return reply.status(500).send(fail('COMMON_ERROR', 'An unexpected error occurred'));
 }

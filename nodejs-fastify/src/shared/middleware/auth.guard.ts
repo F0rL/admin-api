@@ -10,6 +10,6 @@ import { fail } from '../lib/response.js';
 
 export async function authGuard(request: FastifyRequest, reply: FastifyReply) {
   if (!request.session?.userId) {
-    return reply.status(401).send(fail(10001, '未登录或已过期'));
+    return reply.status(401).send(fail('AUTH_UNAUTHORIZED', '未登录或已过期'));
   }
 }

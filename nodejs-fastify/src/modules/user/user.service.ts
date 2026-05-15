@@ -44,9 +44,9 @@ export class UserService {
     });
 
     if (existing) {
-      if (existing.username === input.username) throw new AppError(409, 2002, '用户名已存在');
-      if (input.email && existing.email === input.email) throw new AppError(409, 2003, '邮箱已存在');
-      if (input.phone && existing.phone === input.phone) throw new AppError(409, 2004, '手机号已存在');
+      if (existing.username === input.username) throw new AppError(409, 'USER_DUPLICATE_USERNAME', '用户名已存在');
+      if (input.email && existing.email === input.email) throw new AppError(409, 'USER_DUPLICATE_EMAIL', '邮箱已存在');
+      if (input.phone && existing.phone === input.phone) throw new AppError(409, 'USER_DUPLICATE_PHONE', '手机号已存在');
     }
 
     const user = await prisma.user.create({
@@ -69,7 +69,7 @@ export class UserService {
 
   async delete(id: string): Promise<void> {
     const user = await prisma.user.findUnique({ where: { id } });
-    if (!user || user.deletedAt) throw new AppError(404, 2001, '用户不存在');
+    if (!user || user.deletedAt) throw new AppError(404, 'USER_NOT_FOUND', '用户不存在');
 
     await prisma.user.update({
       where: { id },
@@ -79,7 +79,7 @@ export class UserService {
 
   async update(input: UpdateUserInput): Promise<{ data: UserDetail }> {
     const user = await prisma.user.findUnique({ where: { id: input.id } });
-    if (!user || user.deletedAt) throw new AppError(404, 2001, '用户不存在');
+    if (!user || user.deletedAt) throw new AppError(404, 'USER_NOT_FOUND', '用户不存在');
 
     const data: Record<string, unknown> = {};
     if (input.nickname !== undefined) data.nickname = input.nickname;
@@ -106,7 +106,7 @@ export class UserService {
       where: { id },
       include: { role: true, department: true },
     });
-    if (!user || user.deletedAt) throw new AppError(404, 2001, '用户不存在');
+    if (!user || user.deletedAt) throw new AppError(404, 'USER_NOT_FOUND', '用户不存在');
 
     return { data: toUserDetail(user) };
   }

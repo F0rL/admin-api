@@ -21,7 +21,7 @@ export class DepartmentService {
   async create(input: CreateDepartmentInput): Promise<{ data: DepartmentTreeItem }> {
     if (input.parentId) {
       const parent = await prisma.department.findUnique({ where: { id: input.parentId } });
-      if (!parent || parent.deletedAt) throw new AppError(404, 5002, '父部门不存在');
+      if (!parent || parent.deletedAt) throw new AppError(404, 'DEPT_PARENT_NOT_FOUND', '父部门不存在');
     }
 
     const dept = await prisma.department.create({
@@ -39,20 +39,20 @@ export class DepartmentService {
 
   async delete(id: string): Promise<void> {
     const dept = await prisma.department.findUnique({ where: { id } });
-    if (!dept || dept.deletedAt) throw new AppError(404, 5001, '部门不存在');
+    if (!dept || dept.deletedAt) throw new AppError(404, 'DEPT_NOT_FOUND', '部门不存在');
 
     const childCount = await prisma.department.count({ where: { parentId: id, deletedAt: null } });
-    if (childCount > 0) throw new AppError(400, 5004, '存在子部门不可删除');
+    if (childCount > 0) throw new AppError(400, 'DEPT_HAS_CHILDREN', '存在子部门不可删除');
 
     const userCount = await prisma.user.count({ where: { departmentId: id, deletedAt: null } });
-    if (userCount > 0) throw new AppError(400, 5005, '部门下有用户不可删除');
+    if (userCount > 0) throw new AppError(400, 'DEPT_HAS_USERS', '部门下有用户不可删除');
 
     await prisma.department.update({ where: { id }, data: { deletedAt: new Date() } });
   }
 
   async update(input: UpdateDepartmentInput): Promise<{ data: DepartmentTreeItem }> {
     const dept = await prisma.department.findUnique({ where: { id: input.id } });
-    if (!dept || dept.deletedAt) throw new AppError(404, 5001, '部门不存在');
+    if (!dept || dept.deletedAt) throw new AppError(404, 'DEPT_NOT_FOUND', '部门不存在');
 
     const data: Record<string, unknown> = {};
     if (input.name !== undefined) data.name = input.name;
@@ -66,7 +66,7 @@ export class DepartmentService {
 
   async detail(id: string): Promise<{ data: DepartmentTreeItem }> {
     const dept = await prisma.department.findUnique({ where: { id } });
-    if (!dept || dept.deletedAt) throw new AppError(404, 5001, '部门不存在');
+    if (!dept || dept.deletedAt) throw new AppError(404, 'DEPT_NOT_FOUND', '部门不存在');
 
     return { data: { ...dept, children: [] } };
   }
