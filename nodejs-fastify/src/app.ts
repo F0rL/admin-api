@@ -20,6 +20,10 @@ import { prisma } from './database/prisma.js';
 import { errorMiddleware } from './shared/middleware/error.middleware.js';
 import { healthRoutes } from './modules/health/health.routes.js';
 import { authRoutes } from './modules/auth/auth.routes.js';
+import { userRoutes } from './modules/user/user.routes.js';
+import { roleRoutes } from './modules/role/role.routes.js';
+import { menuRoutes } from './modules/menu/menu.routes.js';
+import { departmentRoutes } from './modules/department/department.routes.js';
 
 export async function buildApp() {
   const app = Fastify({
@@ -62,6 +66,10 @@ export async function buildApp() {
     async (api) => {
       await api.register(healthRoutes);
       await api.register(authRoutes);
+      await api.register(userRoutes);
+      await api.register(roleRoutes);
+      await api.register(menuRoutes);
+      await api.register(departmentRoutes);
     },
     { prefix: '/api/v1' },
   );
