@@ -129,7 +129,7 @@ export async function menuRoutes(app: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const result = await menuService.getUserMenus(request.session.userId);
+      const result = await menuService.getUserMenus(request.userId);
       return reply.send(ok(result.data));
     },
   );
