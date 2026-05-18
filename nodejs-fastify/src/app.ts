@@ -10,22 +10,28 @@
  * buildApp() 返回已配置的 Fastify 实例，server.ts 负责启动监听。
  */
 
-import Fastify from 'fastify';
-import fastifySwagger from '@fastify/swagger';
-import fastifySwaggerUi from '@fastify/swagger-ui';
-import fastifyCookie from '@fastify/cookie';
-import fastifySession from '@fastify/session';
-import { RedisStore } from 'connect-redis';
-import { Redis } from 'ioredis';
-import { env } from './config/env.js';
-import { prisma } from './database/prisma.js';
-import { errorMiddleware } from './shared/middleware/error.middleware.js';
-import { healthRoutes } from './modules/health/health.routes.js';
-import { authRoutes } from './modules/auth/auth.routes.js';
-import { userRoutes } from './modules/user/user.routes.js';
-import { roleRoutes } from './modules/role/role.routes.js';
-import { menuRoutes } from './modules/menu/menu.routes.js';
-import { departmentRoutes } from './modules/department/department.routes.js';
+import Fastify, { type FastifyInstance } from 'fastify'
+import fastifyCors from '@fastify/cors'
+import fastifySwagger from '@fastify/swagger'
+import fastifySwaggerUi from '@fastify/swagger-ui'
+import fastifyCookie from '@fastify/cookie'
+import fastifySession from '@fastify/session'
+import { RedisStore } from 'connect-redis'
+import { Redis } from 'ioredis'
+import { env } from './config/env.js'
+import { prisma } from './database/prisma.js'
+import { errorMiddleware } from './shared/middleware/error.middleware.js'
+import { healthRoutes } from './modules/health/health.routes.js'
+import { authRoutes } from './modules/auth/auth.routes.js'
+import { userRoutes } from './modules/user/user.routes.js'
+import { roleRoutes } from './modules/role/role.routes.js'
+import { menuRoutes } from './modules/menu/menu.routes.js'
+import { departmentRoutes } from './modules/department/department.routes.js'
+
+const routeModules = [
+  healthRoutes, authRoutes, userRoutes,
+  roleRoutes, menuRoutes, departmentRoutes,
+] as const
 
 export async function buildApp() {
   const app = Fastify({
@@ -38,7 +44,9 @@ export async function buildApp() {
         },
       }),
     },
-  });
+  })
+
+  const displayHost = env.HOST === '0.0.0.0' ? 'localhost' : env.HOST
 
   // Swagger / OpenAPI 文档
   await app.register(fastifySwagger, {
@@ -48,7 +56,9 @@ export async function buildApp() {
         description: '后台管理系统接口文档',
         version: '0.1.0',
       },
-      servers: [{ url: 'http://localhost:3000', description: '开发环境' }],
+      servers: [
+        { url: `http://${displayHost}:${env.PORT}`, description: '开发环境' },
+      ],
       components: {
         securitySchemes: {
           sessionCookie: {
@@ -60,22 +70,31 @@ export async function buildApp() {
         },
       },
     },
-  });
+  })
 
+  const docsPrefix = 'docs'
   await app.register(fastifySwaggerUi, {
-    routePrefix: '/docs',
+    routePrefix: `/${docsPrefix}`,
     uiConfig: {
       docExpansion: 'list',
       deepLinking: true,
     },
-  });
+  })
+
+  app.log.info(`API 文档: http://${displayHost}:${env.PORT}/${docsPrefix}`)
+
+  // CORS（允许 Swagger UI 跨域请求）
+  await app.register(fastifyCors, {
+    origin: true,
+    credentials: true,
+  })
 
   // Cookie parser (required by session)
-  await app.register(fastifyCookie);
+  await app.register(fastifyCookie)
 
   // Redis-backed session store
-  const redisClient = new Redis(env.REDIS_URL);
-  const redisStore = new RedisStore({ client: redisClient });
+  const redisClient = new Redis(env.REDIS_URL)
+  const redisStore = new RedisStore({ client: redisClient })
 
   await app.register(fastifySession, {
     store: redisStore,
@@ -88,29 +107,26 @@ export async function buildApp() {
       maxAge: env.SESSION_TTL * 1000,
     },
     saveUninitialized: false,
-  });
+  })
 
   // Global error handler
-  app.setErrorHandler(errorMiddleware);
+  app.setErrorHandler(errorMiddleware)
 
   // Register all routes under /api/v1 prefix
   await app.register(
-    async (api) => {
-      await api.register(healthRoutes);
-      await api.register(authRoutes);
-      await api.register(userRoutes);
-      await api.register(roleRoutes);
-      await api.register(menuRoutes);
-      await api.register(departmentRoutes);
+    async (api: FastifyInstance) => {
+      for (const registerRoutes of routeModules) {
+        await api.register(registerRoutes)
+      }
     },
-    { prefix: '/api/v1' },
-  );
+    { prefix: '/api/v1' }
+  )
 
   // Graceful shutdown
   app.addHook('onClose', async () => {
-    await prisma.$disconnect();
-    await redisClient.quit();
-  });
+    await prisma.$disconnect()
+    await redisClient.quit()
+  })
 
-  return app;
+  return app
 }

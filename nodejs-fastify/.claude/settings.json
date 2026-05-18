@@ -2,7 +2,6 @@
   "attribution": {
     "commit": ""
   },
-  "language": "chinese",
   "permissions": {
     "allow": [
       "Bash(mkdir -p \"d:/code/store/admin-api/nodejs-fastify/src/shared/lib\")",
@@ -16,7 +15,11 @@
       "Bash(npx vitest *)",
       "Bash(git add *)",
       "Bash(Get-ChildItem -Path src/modules -Recurse -Name)",
-      "Bash(Sort-Object)"
+      "Bash(Sort-Object)",
+      "Bash(git commit -m ' *)",
+      "Skill(superpowers:brainstorming)",
+      "Skill(superpowers:brainstorming:*)"
     ]
-  }
+  },
+  "language": "chinese"
 }

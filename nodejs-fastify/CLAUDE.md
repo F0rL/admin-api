@@ -135,3 +135,4 @@ Use `shared/lib/response.ts` helpers (`ok()`, `fail()`) to build responses.
 
 - Commit message must use **Chinese**
 - **Never** include `Co-Authored-By` trailer of any kind
+- **Never auto-commit** after completing a task or feature. Stage changes and present a summary of what changed, then let the user decide whether and when to commit.
