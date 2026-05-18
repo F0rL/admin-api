@@ -5,7 +5,6 @@ describe('env config', () => {
     process.env.NODE_ENV = 'test';
     process.env.DATABASE_URL = 'mysql://localhost:3306/test';
     process.env.REDIS_URL = 'redis://localhost:6379/0';
-    process.env.SESSION_SECRET = 'a'.repeat(32);
   });
 
   it('should load and validate env variables', async () => {
