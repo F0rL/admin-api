@@ -2,8 +2,8 @@
  * Fastify 应用工厂
  *
  * 组装应用所需的所有插件和路由：
- * - Cookie 解析（Session 前置依赖）
- * - Redis 存储的 Session（connect-redis）
+ * - CORS（跨域支持）
+ * - Swagger / OpenAPI 文档
  * - 全局错误处理中间件
  * - 所有路由挂载到 /api/v1 前缀下
  *
@@ -14,13 +14,10 @@ import Fastify, { type FastifyInstance } from 'fastify'
 import fastifyCors from '@fastify/cors'
 import fastifySwagger from '@fastify/swagger'
 import fastifySwaggerUi from '@fastify/swagger-ui'
-import fastifyCookie from '@fastify/cookie'
-import fastifySession from '@fastify/session'
-import { RedisStore } from 'connect-redis'
-import { Redis } from 'ioredis'
 import { env } from './config/env.js'
 import { prisma } from './database/prisma.js'
 import { errorMiddleware } from './shared/middleware/error.middleware.js'
+import { closeSessionRedis } from './shared/lib/session.js'
 import { healthRoutes } from './modules/health/health.routes.js'
 import { authRoutes } from './modules/auth/auth.routes.js'
 import { userRoutes } from './modules/user/user.routes.js'
@@ -89,26 +86,6 @@ export async function buildApp() {
     credentials: true,
   })
 
-  // Cookie parser (required by session)
-  await app.register(fastifyCookie)
-
-  // Redis-backed session store
-  const redisClient = new Redis(env.REDIS_URL)
-  const redisStore = new RedisStore({ client: redisClient })
-
-  await app.register(fastifySession, {
-    store: redisStore,
-    secret: env.SESSION_SECRET,
-    cookie: {
-      httpOnly: true,
-      sameSite: 'lax',
-      path: '/',
-      secure: env.NODE_ENV === 'prod',
-      maxAge: env.SESSION_TTL * 1000,
-    },
-    saveUninitialized: false,
-  })
-
   // Global error handler
   app.setErrorHandler(errorMiddleware)
 
@@ -125,7 +102,7 @@ export async function buildApp() {
   // Graceful shutdown
   app.addHook('onClose', async () => {
     await prisma.$disconnect()
-    await redisClient.quit()
+    await closeSessionRedis()
   })
 
   return app
