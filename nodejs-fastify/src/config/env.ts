@@ -35,7 +35,6 @@ const envSchema = z.object({
   HOST: z.string().default('0.0.0.0'),
   DATABASE_URL: z.string().url(),
   REDIS_URL: z.string().url(),
-  SESSION_SECRET: z.string().min(32),
   SESSION_TTL: z.coerce.number().default(86400),
   QUEUE_ENABLED: z
     .string()
