@@ -12,7 +12,7 @@ import { prisma } from '../../database/prisma.js';
 
 export function requirePermission(permissionCode: string) {
   return async (request: FastifyRequest, reply: FastifyReply) => {
-    const userId = request.session?.userId as string | undefined;
+    const userId = request.userId;
     if (!userId) {
       return reply.status(401).send(fail('AUTH_UNAUTHORIZED', '未登录或已过期'));
     }
