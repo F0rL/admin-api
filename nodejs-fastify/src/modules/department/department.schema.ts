@@ -40,3 +40,28 @@ export interface DepartmentTreeItem {
   status: boolean;
   children: DepartmentTreeItem[];
 }
+
+import { registerLabels } from '../../shared/lib/zod-labels.js';
+
+registerLabels(createDepartmentSchema, {
+  name: '部门名称',
+  parentId: '上级部门',
+  sortOrder: '排序号',
+  status: '状态',
+});
+
+registerLabels(updateDepartmentSchema, {
+  id: '部门 ID',
+  name: '部门名称',
+  parentId: '上级部门',
+  sortOrder: '排序号',
+  status: '状态',
+});
+
+registerLabels(batchUpdateDepartmentSchema, {
+  updates: '批量更新列表',
+  id: '部门 ID',
+  sortOrder: '排序号',
+  status: '状态',
+  parentId: '上级部门',
+});

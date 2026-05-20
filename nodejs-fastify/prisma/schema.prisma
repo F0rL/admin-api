@@ -11,7 +11,6 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
 }
 
 /// 用户表
@@ -37,10 +36,10 @@ model User {
   updatedAt      DateTime  @updatedAt
   deletedAt      DateTime?
 
-  role           Role?           @relation(fields: [roleId], references: [id])
-  department     Department?     @relation(fields: [departmentId], references: [id])
-  loginLogs      LoginLog[]
-  operationLogs  OperationLog[]
+  role          Role?          @relation(fields: [roleId], references: [id])
+  department    Department?    @relation(fields: [departmentId], references: [id])
+  loginLogs     LoginLog[]
+  operationLogs OperationLog[]
 
   @@map("users")
 }
@@ -68,7 +67,7 @@ model Role {
 /// 权限表
 /// 主键为 permission code，作为权限控制和鉴权的唯一依据
 model Permission {
-  code        String    @id @db.VarChar(100)    // 如 "user:create", "user:delete"
+  code        String    @id @db.VarChar(100) // 如 "user:create", "user:delete"
   name        String    @db.VarChar(50)
   module      String    @db.VarChar(50)
   description String?   @db.VarChar(255)
@@ -83,10 +82,10 @@ model Permission {
 
 /// 角色-权限关联表
 model RolePermission {
-  id             String   @id @db.VarChar(36)
-  roleId         String   @db.VarChar(36)
-  permissionCode String   @db.VarChar(100)
-  createdAt      DateTime @default(now())
+  id             String    @id @db.VarChar(36)
+  roleId         String    @db.VarChar(36)
+  permissionCode String    @db.VarChar(100)
+  createdAt      DateTime  @default(now())
   deletedAt      DateTime?
 
   role       Role       @relation(fields: [roleId], references: [id])
@@ -98,23 +97,23 @@ model RolePermission {
 /// 菜单表
 /// 支持树形结构（directory -> menu -> button），按钮级权限关联 permissions 表
 model Menu {
-  id             String   @id @db.VarChar(36)
-  parentId       String?  @db.VarChar(36)
-  name           String   @db.VarChar(100)
-  icon           String?  @db.VarChar(100)
-  path           String?  @db.VarChar(255)
-  component      String?  @db.VarChar(255)
-  type           String   @db.VarChar(20)      // directory | menu | button
-  permissionCode String?  @db.VarChar(100)     // button 类型时关联 permissions.code
-  sortOrder      Int      @default(0)
-  isVisible      Boolean  @default(true)
-  status         Boolean  @default(true)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id             String    @id @db.VarChar(36)
+  parentId       String?   @db.VarChar(36)
+  name           String    @db.VarChar(100)
+  icon           String?   @db.VarChar(100)
+  path           String?   @db.VarChar(255)
+  component      String?   @db.VarChar(255)
+  type           String    @db.VarChar(20) // directory | menu | button
+  permissionCode String?   @db.VarChar(100) // button 类型时关联 permissions.code
+  sortOrder      Int       @default(0)
+  isVisible      Boolean   @default(true)
+  status         Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
   deletedAt      DateTime?
 
-  parent     Menu?      @relation("MenuTree", fields: [parentId], references: [id])
-  children   Menu[]     @relation("MenuTree")
+  parent     Menu?       @relation("MenuTree", fields: [parentId], references: [id])
+  children   Menu[]      @relation("MenuTree")
   roleMenus  RoleMenu[]
   permission Permission? @relation(fields: [permissionCode], references: [code])
 
@@ -123,10 +122,10 @@ model Menu {
 
 /// 角色-菜单关联表
 model RoleMenu {
-  id        String   @id @db.VarChar(36)
-  roleId    String   @db.VarChar(36)
-  menuId    String   @db.VarChar(36)
-  createdAt DateTime @default(now())
+  id        String    @id @db.VarChar(36)
+  roleId    String    @db.VarChar(36)
+  menuId    String    @db.VarChar(36)
+  createdAt DateTime  @default(now())
   deletedAt DateTime?
 
   role Role @relation(fields: [roleId], references: [id])
@@ -137,16 +136,16 @@ model RoleMenu {
 
 /// 部门表
 model Department {
-  id        String       @id @db.VarChar(36)
-  name      String       @db.VarChar(100)
-  parentId  String?      @db.VarChar(36)
-  sortOrder Int          @default(0)
-  status    Boolean      @default(true)
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  id        String    @id @db.VarChar(36)
+  name      String    @db.VarChar(100)
+  parentId  String?   @db.VarChar(36)
+  sortOrder Int       @default(0)
+  status    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  parent   Department? @relation("DepartmentTree", fields: [parentId], references: [id])
+  parent   Department?  @relation("DepartmentTree", fields: [parentId], references: [id])
   children Department[] @relation("DepartmentTree")
   users    User[]
 
@@ -160,7 +159,7 @@ model LoginLog {
   username   String   @db.VarChar(50)
   ip         String   @db.VarChar(45)
   userAgent  String?  @db.VarChar(500)
-  status     String   @db.VarChar(20)    // success | failure
+  status     String   @db.VarChar(20) // success | failure
   failReason String?  @db.VarChar(255)
   createdAt  DateTime @default(now())
 
@@ -174,7 +173,7 @@ model OperationLog {
   id         String   @id @db.VarChar(36)
   userId     String   @db.VarChar(36)
   username   String   @db.VarChar(50)
-  action     String   @db.VarChar(50)    // create | update | delete
+  action     String   @db.VarChar(50) // create | update | delete
   module     String   @db.VarChar(50)
   targetId   String?  @db.VarChar(100)
   targetType String?  @db.VarChar(50)

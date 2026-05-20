@@ -6,6 +6,7 @@ import {
   successResponseSchema,
   paginatedResponseSchema,
 } from "../../shared/lib/zod-schema.js";
+import { validate } from "../../shared/lib/validation.js";
 import { userService } from "./user.service.js";
 import {
   createUserSchema,
@@ -53,7 +54,7 @@ export async function userRoutes(app: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const input = createUserSchema.parse(request.body);
+      const input = validate(createUserSchema, request.body, { pathPrefix: 'body' });
       const result = await userService.create(input);
       return reply.send(ok(result.data, "创建成功"));
     },
@@ -94,7 +95,7 @@ export async function userRoutes(app: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const input = updateUserSchema.parse(request.body);
+      const input = validate(updateUserSchema, request.body, { pathPrefix: 'body' });
       const result = await userService.update(input);
       return reply.send(ok(result.data, "更新成功"));
     },
@@ -135,7 +136,7 @@ export async function userRoutes(app: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const query = userListQuerySchema.parse(request.query);
+      const query = validate(userListQuerySchema, request.query, { pathPrefix: 'query' });
       const result = await userService.list(query);
       return reply.send(ok(result.data));
     },
@@ -153,7 +154,7 @@ export async function userRoutes(app: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const input = batchUpdateUserSchema.parse(request.body);
+      const input = validate(batchUpdateUserSchema, request.body, { pathPrefix: 'body' });
       await userService.batchUpdate(input);
       return reply.send(ok(null, "批量更新成功"));
     },

@@ -7,8 +7,13 @@
 
 import { env } from './config/env.js';
 import { buildApp } from './app.js';
+import { waitForDatabase } from './database/prisma.js';
 
 async function start() {
+  console.log('等待数据库就绪...')
+  await waitForDatabase()
+  console.log('数据库连接成功')
+
   const app = await buildApp();
 
   try {

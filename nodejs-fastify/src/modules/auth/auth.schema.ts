@@ -1,21 +1,21 @@
 /**
  * 认证模块 - 请求/响应数据校验
  *
- * 使用 Zod 定义登录请求体和用户响应体的结构及校验规则。
+ * 错误提示由全局 errorMap (zod-error-map.ts) 统一管理。
  */
 
 import { z } from 'zod';
 
 export const loginSchema = z.object({
-  username: z.string().min(1, '用户名不能为空').max(50),
-  password: z.string().min(1, '密码不能为空').max(255),
+  username: z.string().min(1).max(50),
+  password: z.string().min(1).max(255),
 });
 
 export type LoginInput = z.infer<typeof loginSchema>;
 
 export const passwordChangeSchema = z.object({
   oldPassword: z.string().min(1).max(255),
-  newPassword: z.string().min(6, '密码至少6位').max(255),
+  newPassword: z.string().min(6).max(255),
 });
 
 export type PasswordChangeInput = z.infer<typeof passwordChangeSchema>;
@@ -26,6 +26,23 @@ export const passwordResetSchema = z.object({
 });
 
 export type PasswordResetInput = z.infer<typeof passwordResetSchema>;
+
+import { registerLabels } from '../../shared/lib/zod-labels.js';
+
+registerLabels(loginSchema, {
+  username: '用户名',
+  password: '密码不能为空',
+});
+
+registerLabels(passwordChangeSchema, {
+  oldPassword: '旧密码',
+  newPassword: '新密码',
+});
+
+registerLabels(passwordResetSchema, {
+  userId: '用户 ID',
+  newPassword: '新密码',
+});
 
 export interface UserLoginResponse {
   id: string;

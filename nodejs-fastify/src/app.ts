@@ -14,6 +14,8 @@ import Fastify, { type FastifyInstance } from 'fastify'
 import fastifyCors from '@fastify/cors'
 import fastifySwagger from '@fastify/swagger'
 import fastifySwaggerUi from '@fastify/swagger-ui'
+import { z } from 'zod'
+import { chineseErrorMap } from './shared/lib/zod-error-map.js'
 import { env } from './config/env.js'
 import { prisma } from './database/prisma.js'
 import { errorMiddleware } from './shared/middleware/error.middleware.js'
@@ -26,8 +28,12 @@ import { menuRoutes } from './modules/menu/menu.routes.js'
 import { departmentRoutes } from './modules/department/department.routes.js'
 
 const routeModules = [
-  healthRoutes, authRoutes, userRoutes,
-  roleRoutes, menuRoutes, departmentRoutes,
+  healthRoutes,
+  authRoutes,
+  userRoutes,
+  roleRoutes,
+  menuRoutes,
+  departmentRoutes,
 ] as const
 
 export async function buildApp() {
@@ -42,6 +48,17 @@ export async function buildApp() {
       }),
     },
   })
+  // 禁用 Fastify 内置 ajv 校验，由 Zod schema 在路由中自行校验
+  // body 部分保留默认 ajv 解析以确保 JSON 正确解析，校验结果由 Zod 处理
+  app.setValidatorCompiler((req) => {
+    if (req.httpPart === 'body') {
+      return (value) => ({ value })
+    }
+    return () => ({ value: true })
+  })
+
+  // 注册 Zod 全局中文错误映射
+  z.setErrorMap(chineseErrorMap)
 
   const displayHost = env.HOST === '0.0.0.0' ? 'localhost' : env.HOST
 

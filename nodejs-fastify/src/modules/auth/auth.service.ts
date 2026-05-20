@@ -8,24 +8,31 @@
  * resetPassword()  - 管理员重置指定用户密码（无需原密码）
  */
 
-import bcrypt from 'bcryptjs';
-import { prisma } from '../../database/prisma.js';
-import { AppError } from '../../shared/lib/errors.js';
-import { generateId } from '../../shared/lib/id.js';
-import type { LoginInput, UserLoginResponse, MenuTreeItem } from './auth.schema.js';
+import bcrypt from 'bcryptjs'
+import { prisma } from '../../database/prisma.js'
+import { AppError } from '../../shared/lib/errors.js'
+import { generateId } from '../../shared/lib/id.js'
+import type {
+  LoginInput,
+  UserLoginResponse,
+  MenuTreeItem,
+} from './auth.schema.js'
 
-function buildMenuTree(parentId: string | null, allMenus: any[]): MenuTreeItem[] {
+function buildMenuTree(
+  parentId: string | null,
+  allMenus: any[]
+): MenuTreeItem[] {
   return allMenus
-    .filter((m) => m.parentId === parentId && m.type !== 'button')
+    .filter(m => m.parentId === parentId && m.type !== 'button')
     .sort((a, b) => a.sortOrder - b.sortOrder)
-    .map((m) => ({
+    .map(m => ({
       id: m.id,
       name: m.name,
       path: m.path,
       icon: m.icon,
       type: m.type,
       children: buildMenuTree(m.id, allMenus),
-    }));
+    }))
 }
 
 async function getUserPermissions(roleId: string) {
@@ -42,85 +49,95 @@ async function getUserPermissions(roleId: string) {
       },
       orderBy: { sortOrder: 'asc' },
     }),
-  ]);
+  ])
 
   return {
-    permissions: rolePermissions.map((rp) => rp.permissionCode),
+    permissions: rolePermissions.map(rp => rp.permissionCode),
     menus: buildMenuTree(null, roleMenus),
-  };
+  }
 }
 
 export class AuthService {
-  async login(input: LoginInput): Promise<{ data: UserLoginResponse }> {
+  async login(input: LoginInput): Promise<{
+    id: string
+    username: string
+    role: { id: string; name: string; code: string } | null
+  }> {
     const user = await prisma.user.findUnique({
       where: { username: input.username },
       include: { role: true },
-    });
+    })
 
     if (!user || user.deletedAt) {
-      throw new AppError(401, 'AUTH_LOGIN_FAILED', '用户名或密码错误');
+      throw new AppError(400, 'AUTH_LOGIN_FAILED', '用户名或密码错误')
     }
 
-    if (user.isLocked && user.lockedUntil && user.lockedUntil > new Date()) {
-      throw new AppError(403, 'AUTH_ACCOUNT_LOCKED', '账号已被锁定');
+    if (user.isLocked) {
+      if (user.lockedUntil && user.lockedUntil > new Date()) {
+        throw new AppError(400, 'AUTH_ACCOUNT_LOCKED', '账号已被锁定')
+      }
+      // 锁定时间已过，自动清除锁定状态
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { isLocked: false, lockedUntil: null, loginFailCount: 0 },
+      })
     }
 
     if (!user.isActive) {
-      throw new AppError(403, 'AUTH_ACCOUNT_DISABLED', '账号已被禁用');
+      throw new AppError(400, 'AUTH_ACCOUNT_DISABLED', '账号已被禁用')
     }
 
-    const valid = await bcrypt.compare(input.password, user.password);
+    const valid = await bcrypt.compare(input.password, user.password)
     if (!valid) {
-      const failCount = user.loginFailCount + 1;
-      const updates: Record<string, unknown> = { loginFailCount: failCount };
+      const failCount = user.loginFailCount + 1
+      const updates: Record<string, unknown> = { loginFailCount: failCount }
       if (failCount >= 5) {
-        updates.isLocked = true;
-        updates.lockedUntil = new Date(Date.now() + 30 * 60 * 1000);
+        updates.isLocked = true
+        updates.lockedUntil = new Date(Date.now() + 30 * 60 * 1000)
       }
-      await prisma.user.update({ where: { id: user.id }, data: updates });
+      await prisma.user.update({ where: { id: user.id }, data: updates })
 
       await prisma.loginLog.create({
-        data: { id: generateId(), userId: user.id, username: input.username, ip: '', status: 'failure', failReason: '密码错误' },
-      });
+        data: {
+          id: generateId(),
+          userId: user.id,
+          username: input.username,
+          ip: '',
+          status: 'failure',
+          failReason: '密码错误',
+        },
+      })
 
-      throw new AppError(401, 'AUTH_LOGIN_FAILED', '用户名或密码错误');
+      throw new AppError(400, 'AUTH_LOGIN_FAILED', '用户名或密码错误')
     }
 
     await prisma.user.update({
       where: { id: user.id },
       data: { loginFailCount: 0, isLocked: false, lockedUntil: null },
-    });
-
-    const { permissions, menus } = user.roleId
-      ? await getUserPermissions(user.roleId)
-      : { permissions: [], menus: [] };
+    })
 
     return {
-      data: {
-        id: user.id,
-        username: user.username,
-        nickname: user.nickname,
-        avatar: user.avatar,
-        role: user.role ? { id: user.role.id, name: user.role.name, code: user.role.code } : null,
-        menus,
-        permissions,
-      },
-    };
+      id: user.id,
+      username: user.username,
+      role: user.role
+        ? { id: user.role.id, name: user.role.name, code: user.role.code }
+        : null,
+    }
   }
 
   async getMe(userId: string): Promise<{ data: UserLoginResponse }> {
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: { role: true },
-    });
+    })
 
     if (!user || user.deletedAt) {
-      throw new AppError(404, 'USER_NOT_FOUND', '用户不存在');
+      throw new AppError(400, 'USER_NOT_FOUND', '用户不存在')
     }
 
     const { permissions, menus } = user.roleId
       ? await getUserPermissions(user.roleId)
-      : { permissions: [], menus: [] };
+      : { permissions: [], menus: [] }
 
     return {
       data: {
@@ -128,29 +145,44 @@ export class AuthService {
         username: user.username,
         nickname: user.nickname,
         avatar: user.avatar,
-        role: user.role ? { id: user.role.id, name: user.role.name, code: user.role.code } : null,
+        role: user.role
+          ? { id: user.role.id, name: user.role.name, code: user.role.code }
+          : null,
         menus,
         permissions,
       },
-    };
+    }
   }
 
-  async changePassword(userId: string, oldPassword: string, newPassword: string): Promise<void> {
-    const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user) throw new AppError(404, 'USER_NOT_FOUND', '用户不存在');
+  async changePassword(
+    userId: string,
+    oldPassword: string,
+    newPassword: string
+  ): Promise<void> {
+    const user = await prisma.user.findUnique({ where: { id: userId } })
+    if (!user) throw new AppError(400, 'USER_NOT_FOUND', '用户不存在')
 
-    const valid = await bcrypt.compare(oldPassword, user.password);
-    if (!valid) throw new AppError(400, 'AUTH_OLD_PASSWORD_ERROR', '原密码错误');
+    const valid = await bcrypt.compare(oldPassword, user.password)
+    if (!valid) throw new AppError(400, 'AUTH_OLD_PASSWORD_ERROR', '原密码错误')
 
-    await prisma.user.update({ where: { id: userId }, data: { password: await bcrypt.hash(newPassword, 10) } });
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password: await bcrypt.hash(newPassword, 10) },
+    })
   }
 
-  async resetPassword(targetUserId: string, newPassword: string): Promise<void> {
-    const user = await prisma.user.findUnique({ where: { id: targetUserId } });
-    if (!user) throw new AppError(404, 'USER_NOT_FOUND', '用户不存在');
+  async resetPassword(
+    targetUserId: string,
+    newPassword: string
+  ): Promise<void> {
+    const user = await prisma.user.findUnique({ where: { id: targetUserId } })
+    if (!user) throw new AppError(400, 'USER_NOT_FOUND', '用户不存在')
 
-    await prisma.user.update({ where: { id: targetUserId }, data: { password: await bcrypt.hash(newPassword, 10) } });
+    await prisma.user.update({
+      where: { id: targetUserId },
+      data: { password: await bcrypt.hash(newPassword, 10) },
+    })
   }
 }
 
-export const authService = new AuthService();
+export const authService = new AuthService()

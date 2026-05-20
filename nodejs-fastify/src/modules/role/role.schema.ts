@@ -53,3 +53,33 @@ export interface RoleDetail extends RoleListItem {
   menuIds: string[];
   permissionCodes: string[];
 }
+
+import { registerLabels } from '../../shared/lib/zod-labels.js';
+
+registerLabels(createRoleSchema, {
+  name: '角色名称',
+  code: '角色编码',
+  description: '描述',
+  status: '状态',
+  sortOrder: '排序号',
+  menuIds: '菜单 ID 列表',
+  permissionCodes: '权限编码列表',
+});
+
+registerLabels(updateRoleSchema, {
+  id: '角色 ID',
+  name: '角色名称',
+  code: '角色编码',
+  description: '描述',
+  status: '状态',
+  sortOrder: '排序号',
+  menuIds: '菜单 ID 列表',
+  permissionCodes: '权限编码列表',
+});
+
+registerLabels(batchUpdateRoleSchema, {
+  updates: '批量更新列表',
+  id: '角色 ID',
+  status: '状态',
+  sortOrder: '排序号',
+});

@@ -2,22 +2,50 @@ services:
   mysql:
     image: mysql:8.0
     container_name: dev-mysql
+    # 引入环境变量文件
+    # env_file:
+    #   - .env
     environment:
-      MYSQL_ROOT_PASSWORD: root123  # 请替换为你的MySQL root密码
-      MYSQL_DATABASE: dev_db                    # 初始化时自动创建的数据库名
+      MYSQL_DATABASE: dev_db
+      MYSQL_ROOT_PASSWORD: root123
+      TZ: Asia/Shanghai  # 设置时区
     ports:
-      - "3306:3306"
+      # 绑定到本地127.0.0.1，提高安全性
+      - "127.0.0.1:3306:3306"
     volumes:
-      - ./mysql_data:/var/lib/mysql             # 数据持久化到本地目录
+      - ./mysql_data:/var/lib/mysql
+      # 可选：挂载初始化SQL脚本目录
+      # - ./mysql/init:/docker-entrypoint-initdb.d:ro
     restart: always
     command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - app-net
+    # 增加健康检查
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   redis:
     image: redis:7
     container_name: dev-redis
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
-      - ./redis_data:/data                      # 数据持久化
-    command: redis-server --appendonly yes --requirepass redis123
+      - ./redis_data:/data
     restart: always
+    # 增加 bind 0.0.0.0 确保能被其他容器或宿主机访问
+    command: redis-server --appendonly yes --requirepass redis123 --bind 0.0.0.0
+    networks:
+      - app-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+# 定义内部共享网络
+networks:
+  app-net:
+    driver: bridge

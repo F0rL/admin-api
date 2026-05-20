@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { authGuard } from '../../shared/middleware/auth.guard.js';
 import { ok } from '../../shared/lib/response.js';
 import { zodSchema, successResponseSchema } from '../../shared/lib/zod-schema.js';
+import { validate } from '../../shared/lib/validation.js';
 import { departmentService } from './department.service.js';
 import { createDepartmentSchema, updateDepartmentSchema, batchUpdateDepartmentSchema } from './department.schema.js';
 
@@ -33,7 +34,7 @@ export async function departmentRoutes(app: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const input = createDepartmentSchema.parse(request.body);
+      const input = validate(createDepartmentSchema, request.body, { pathPrefix: 'body' });
       const result = await departmentService.create(input);
       return reply.send(ok(result.data, '创建成功'));
     },
@@ -69,7 +70,7 @@ export async function departmentRoutes(app: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const input = updateDepartmentSchema.parse(request.body);
+      const input = validate(updateDepartmentSchema, request.body, { pathPrefix: 'body' });
       const result = await departmentService.update(input);
       return reply.send(ok(result.data, '更新成功'));
     },
@@ -157,7 +158,7 @@ export async function departmentRoutes(app: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const input = batchUpdateDepartmentSchema.parse(request.body);
+      const input = validate(batchUpdateDepartmentSchema, request.body, { pathPrefix: 'body' });
       await departmentService.batchUpdate(input);
       return reply.send(ok(null, '批量更新成功'));
     },

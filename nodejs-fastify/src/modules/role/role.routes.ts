@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { authGuard } from '../../shared/middleware/auth.guard.js';
 import { ok } from '../../shared/lib/response.js';
 import { zodSchema, successResponseSchema } from '../../shared/lib/zod-schema.js';
+import { validate } from '../../shared/lib/validation.js';
 import { roleService } from './role.service.js';
 import { createRoleSchema, updateRoleSchema, batchUpdateRoleSchema } from './role.schema.js';
 
@@ -46,7 +47,7 @@ export async function roleRoutes(app: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const input = createRoleSchema.parse(request.body);
+      const input = validate(createRoleSchema, request.body, { pathPrefix: 'body' });
       const result = await roleService.create(input);
       return reply.send(ok(result.data, '创建成功'));
     },
@@ -82,7 +83,7 @@ export async function roleRoutes(app: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const input = updateRoleSchema.parse(request.body);
+      const input = validate(updateRoleSchema, request.body, { pathPrefix: 'body' });
       const result = await roleService.update(input);
       return reply.send(ok(result.data, '更新成功'));
     },
@@ -137,7 +138,7 @@ export async function roleRoutes(app: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const input = batchUpdateRoleSchema.parse(request.body);
+      const input = validate(batchUpdateRoleSchema, request.body, { pathPrefix: 'body' });
       await roleService.batchUpdate(input);
       return reply.send(ok(null, '批量更新成功'));
     },

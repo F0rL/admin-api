@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { authGuard } from '../../shared/middleware/auth.guard.js';
 import { ok } from '../../shared/lib/response.js';
 import { zodSchema, successResponseSchema } from '../../shared/lib/zod-schema.js';
+import { validate } from '../../shared/lib/validation.js';
 import { menuService } from './menu.service.js';
 import { createMenuSchema, updateMenuSchema, batchUpdateMenuSchema } from './menu.schema.js';
 
@@ -39,7 +40,7 @@ export async function menuRoutes(app: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const input = createMenuSchema.parse(request.body);
+      const input = validate(createMenuSchema, request.body, { pathPrefix: 'body' });
       const result = await menuService.create(input);
       return reply.send(ok(result.data, '创建成功'));
     },
@@ -75,7 +76,7 @@ export async function menuRoutes(app: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const input = updateMenuSchema.parse(request.body);
+      const input = validate(updateMenuSchema, request.body, { pathPrefix: 'body' });
       const result = await menuService.update(input);
       return reply.send(ok(result.data, '更新成功'));
     },
@@ -146,7 +147,7 @@ export async function menuRoutes(app: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const input = batchUpdateMenuSchema.parse(request.body);
+      const input = validate(batchUpdateMenuSchema, request.body, { pathPrefix: 'body' });
       await menuService.batchUpdate(input);
       return reply.send(ok(null, '批量更新成功'));
     },

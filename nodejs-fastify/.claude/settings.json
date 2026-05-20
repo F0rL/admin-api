@@ -18,7 +18,11 @@
       "Bash(Sort-Object)",
       "Bash(git commit -m ' *)",
       "Skill(superpowers:brainstorming)",
-      "Skill(superpowers:brainstorming:*)"
+      "Skill(superpowers:brainstorming:*)",
+      "Bash(git commit *)",
+      "Bash(findstr SESSION_SECRET)",
+      "Bash(pnpm ls *)",
+      "Bash(findstr -E \"fastify/cookie|fastify/session|connect-redis\")"
     ]
   },
   "language": "chinese"

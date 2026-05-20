@@ -13,10 +13,37 @@
  */
 
 import { PrismaClient } from '@prisma/client'
+import { PrismaMariaDb } from '@prisma/adapter-mariadb'
 import bcrypt from 'bcryptjs'
+import 'dotenv/config'
 import { generateId } from '../src/shared/lib/id.js'
 
-const prisma = new PrismaClient()
+function parseDatabaseUrl(url: string) {
+  const match = url.match(/mysql:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/)
+  if (!match) {
+    throw new Error('Invalid DATABASE_URL format')
+  }
+  // 强制使用 IPv4 127.0.0.1 而非 localhost (::1)
+  const host = match[3] === 'localhost' ? '127.0.0.1' : match[3]
+  return {
+    user: match[1],
+    password: match[2],
+    host: host,
+    port: parseInt(match[4], 10),
+    database: match[5],
+  }
+}
+
+const dbConfig = parseDatabaseUrl(process.env.DATABASE_URL!)
+const adapter = new PrismaMariaDb({
+  host: dbConfig.host,
+  port: dbConfig.port,
+  user: dbConfig.user,
+  password: dbConfig.password,
+  database: dbConfig.database,
+  connectionLimit: 5,
+})
+const prisma = new PrismaClient({ adapter })
 
 // ===== 权限定义 =====
 const PERMISSIONS = [

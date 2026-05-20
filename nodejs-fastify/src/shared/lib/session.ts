@@ -23,7 +23,9 @@ let redis: Redis | null = null;
 
 function getClient(): Redis {
   if (!redis) {
-    redis = new Redis(env.REDIS_URL);
+    // ioredis 将 localhost 解析为 ::1 (IPv6)，强制使用 127.0.0.1
+    const url = env.REDIS_URL.replace('localhost', '127.0.0.1')
+    redis = new Redis(url);
   }
   return redis;
 }

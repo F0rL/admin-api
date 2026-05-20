@@ -59,3 +59,41 @@ export interface MenuTreeItem {
   status: boolean;
   children: MenuTreeItem[];
 }
+
+import { registerLabels } from '../../shared/lib/zod-labels.js';
+
+registerLabels(createMenuSchema, {
+  parentId: '上级菜单',
+  name: '菜单名称',
+  icon: '图标',
+  path: '路由路径',
+  component: '组件路径',
+  type: '菜单类型',
+  permissionCode: '权限编码',
+  sortOrder: '排序号',
+  isVisible: '是否可见',
+  status: '状态',
+});
+
+registerLabels(updateMenuSchema, {
+  id: '菜单 ID',
+  parentId: '上级菜单',
+  name: '菜单名称',
+  icon: '图标',
+  path: '路由路径',
+  component: '组件路径',
+  type: '菜单类型',
+  permissionCode: '权限编码',
+  sortOrder: '排序号',
+  isVisible: '是否可见',
+  status: '状态',
+});
+
+registerLabels(batchUpdateMenuSchema, {
+  updates: '批量更新列表',
+  id: '菜单 ID',
+  sortOrder: '排序号',
+  isVisible: '是否可见',
+  status: '状态',
+  parentId: '上级菜单',
+});

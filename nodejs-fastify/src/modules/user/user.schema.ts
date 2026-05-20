@@ -75,3 +75,49 @@ export interface UserDetail extends UserListItem {
   createdBy: string | null;
   updatedAt: string;
 }
+
+import { registerLabels } from '../../shared/lib/zod-labels.js';
+
+registerLabels(createUserSchema, {
+  username: '用户名',
+  password: '密码',
+  nickname: '昵称',
+  email: '邮箱',
+  phone: '手机号',
+  avatar: '头像',
+  roleId: '角色 ID',
+  departmentId: '部门 ID',
+});
+
+registerLabels(updateUserSchema, {
+  id: '用户 ID',
+  nickname: '昵称',
+  email: '邮箱',
+  phone: '手机号',
+  avatar: '头像',
+  roleId: '角色 ID',
+  departmentId: '部门 ID',
+  isActive: '状态',
+  isLocked: '锁定状态',
+  password: '密码',
+});
+
+registerLabels(batchUpdateUserSchema, {
+  updates: '批量更新列表',
+  id: '用户 ID',
+  roleId: '角色 ID',
+  departmentId: '部门 ID',
+  isActive: '状态',
+  isLocked: '锁定状态',
+});
+
+registerLabels(userListQuerySchema, {
+  page: '页码',
+  pageSize: '每页条数',
+  keyword: '关键词',
+  status: '状态',
+  roleId: '角色 ID',
+  departmentId: '部门 ID',
+  sortField: '排序字段',
+  sortOrder: '排序方式',
+});

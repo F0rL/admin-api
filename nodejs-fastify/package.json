@@ -19,7 +19,13 @@
     "docker:up": "docker compose -f ../docker-compose.yml up -d",
     "docker:down": "docker compose -f ../docker-compose.yml down",
     "docker:logs": "docker compose -f ../docker-compose.yml logs -f",
-    "postinstall": "node -e \"try{require('fs').existsSync('.env')&&require('child_process').execSync('npx prisma generate',{stdio:'inherit',env:{...process.env,DATABASE_URL:process.env.DATABASE_URL||'mysql://skip@localhost:3306/skip'}})}catch(e){console.log('  [postinstall] DATABASE_URL 未配置，跳过 Prisma Client 生成（执行 pnpm dev:init 时会生成）')}\""
+    "postinstall": "node -e \"try{require('fs').existsSync('.env')&&require('child_process').execSync('npx prisma generate',{stdio:'inherit'})}catch(e){console.log('  [postinstall] DATABASE_URL 未配置，跳过 Prisma Client 生成（执行 pnpm dev:init 时会生成）')}\""
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/engines",
+      "prisma"
+    ]
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -28,7 +34,8 @@
     "@fastify/cors": "^11.2.0",
     "@fastify/swagger": "^9.7.0",
     "@fastify/swagger-ui": "^5.2.6",
-    "@prisma/client": "^6.5.0",
+    "@prisma/adapter-mariadb": "^7.8.0",
+    "@prisma/client": "^7.8.0",
     "axios": "^1.7.0",
     "bcryptjs": "^2.4.3",
     "bullmq": "^5.45.0",
@@ -45,7 +52,7 @@
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22.0.0",
     "nodemon": "^3.1.0",
-    "prisma": "^6.5.0",
+    "prisma": "^7.8.0",
     "tsx": "^4.19.0",
     "typescript": "^5.8.0",
     "vitest": "^3.1.0"
